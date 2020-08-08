@@ -11,7 +11,7 @@ import EduRISC.Instructions
 import EduRISC.Registers
 
 decode :: Word16 -> Inst
-decode w = head $ catMaybes $ map ($w) [decodeRRR, decodeRW, decodeRI, decodeBRR]
+decode w = head $ catMaybes $ map ($w) [decodeRRR, decodeRW, decodeRI, decodeRR]
 
 decodeR :: Word16 -> Reg
 decodeR = toEnum . fromIntegral . (`mod` 0x10)
@@ -26,14 +26,12 @@ decodeRRR :: Word16 -> Maybe Inst
 decodeRRR w = case (shiftR w 12) of
   0x0 -> Just $ ADD d l r
   0x1 -> Just $ SUB d l r
-  0x2 -> Just $ MUL d l r
-  0x3 -> Just $ AND d l r
-  0x4 -> Just $ OR d l r
-  0x5 -> Just $ NAND d l r
-  0x6 -> Just $ XOR d l r
-  0x7 -> Just $ SLL d l r
-  0x8 -> Just $ SRL d l r
-  0x9 -> Just $ SRA d l r
+  0x2 -> Just $ AND d l r
+  0x3 -> Just $ OR d l r
+  0x4 -> Just $ NAND d l r
+  0x5 -> Just $ XOR d l r
+  0x6 -> Just $ SLL d l r
+  0x7 -> Just $ SRA d l r
   _ -> Nothing
   where
     d = decodeR $ shiftR w 8
@@ -42,8 +40,8 @@ decodeRRR w = case (shiftR w 12) of
 
 decodeRW :: Word16 -> Maybe Inst
 decodeRW w = case (shiftR w 12) of
-  0xA -> Just $ MOVLI d v
-  0xB -> Just $ MOVUI d v
+  0x8 -> Just $ MOVLI d v
+  0x9 -> Just $ MOVUI d v
   _ -> Nothing
   where
     d = decodeR $ shiftR w 8
@@ -51,19 +49,19 @@ decodeRW w = case (shiftR w 12) of
 
 decodeRI :: Word16 -> Maybe Inst
 decodeRI w = case (shiftR w 12) of
-  0xC -> Just $ JRN r o
-  0xD -> Just $ JRZ r o
-  0xE -> Just $ JRP r o
+  0xA -> Just $ JRN r o
+  0xB -> Just $ JRZ r o
+  0xC -> Just $ JRP r o
   _ -> Nothing
   where
     r = decodeR $ shiftR w 8
     o = decodeI w
 
-decodeBRR :: Word16 -> Maybe Inst
-decodeBRR w = case (shiftR w 12) of
-  0xF -> Just $ MEM o m r
+decodeRR :: Word16 -> Maybe Inst
+decodeRR w = case (shiftR w 12) of
+  0xE -> Just $ LOD m r
+  0xF -> Just $ STR m r
   _ -> Nothing
   where
-    o = if testBit w 11 then STORE else LOAD
     m = decodeR $ shiftR w 4
     r = decodeR w
