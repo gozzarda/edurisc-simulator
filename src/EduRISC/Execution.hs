@@ -41,13 +41,11 @@ fetchOpcode = getPC >>= getMem
 doInst :: Inst -> EvalCpu CpuSignal
 doInst (ADD d l r) = doBinOp (+) d l r
 doInst (SUB d l r) = doBinOp (-) d l r
-doInst (MUL d l r) = doBinOp (*) d l r
 doInst (AND d l r) = doBinOp (.&.) d l r
 doInst (OR d l r) = doBinOp (.|.) d l r
 doInst (NAND d l r) = doBinOp (nand) d l r
 doInst (XOR d l r) = doBinOp (xor) d l r
 doInst (SLL d l r) = doBinOp (shiftLLogic) d l r
-doInst (SRL d l r) = doBinOp (shiftRLogic) d l r
 doInst (SRA d l r) = doBinOp (shiftRArith) d l r
 doInst (MOVLI d v) = movli d v
 doInst (MOVUI d v) = movui d v
@@ -55,8 +53,8 @@ doInst (JRN r o) = jrn r o
 doInst (JRZ R0 0xFF) = return SigHalt
 doInst (JRZ r o) = jrz r o
 doInst (JRP r o) = jrp r o
-doInst (MEM LOAD m r) = load m r
-doInst (MEM STORE m r) = store m r
+doInst (LOD m r) = load m r
+doInst (STR m r) = store m r
 
 getReg :: Reg -> EvalCpu Word16
 getReg reg = do
@@ -108,8 +106,8 @@ nand l r = complement (l .&. r)
 shiftLLogic :: Word16 -> Word16 -> Word16
 shiftLLogic v o = shiftL v $ fromIntegral (asSigned o)
 
-shiftRLogic :: Word16 -> Word16 -> Word16
-shiftRLogic v o = shiftR v $ fromIntegral (asSigned o)
+-- shiftRLogic :: Word16 -> Word16 -> Word16
+-- shiftRLogic v o = shiftR v $ fromIntegral (asSigned o)
 
 shiftRArith :: Word16 -> Word16 -> Word16
 shiftRArith v o = fromIntegral $ shiftR (fromIntegral v :: Int16) $ fromIntegral (asSigned o)
